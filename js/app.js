@@ -13,6 +13,10 @@ const firebaseConfig = {
 
 firebase.initializeApp(firebaseConfig);
 
+console.log("app.js loaded");
+console.log("firebase apps count:", firebase.apps ? firebase.apps.length : "no firebase");
+console.log("auth object exists:", typeof firebase.auth === "function");
+
 const auth = firebase.auth();
 const db = firebase.firestore();
 const storage = firebase.storage();
@@ -22,32 +26,32 @@ const storage = firebase.storage();
  ****************************************************/
 
 function signup() {
-    const email = document.getElementById("email").value;
-    const password = document.getElementById("password").value;
+    console.log("signup() called");
+    const email = document.getElementById("email")?.value;
+    const password = document.getElementById("password")?.value;
+    console.log("email:", email, "password length:", password ? password.length : 0);
+
+    if (!email || !password) {
+        alert("Please enter email and password");
+        return;
+    }
+
+    if (!auth) {
+        console.error("auth is undefined");
+        alert("Authentication not initialized");
+        return;
+    }
 
     auth.createUserWithEmailAndPassword(email, password)
         .then(() => {
+            console.log("createUser success");
             alert("Account created!");
             window.location.href = "login.html";
         })
-        .catch(error => alert(error.message));
-}
-
-function login() {
-    const email = document.getElementById("email").value;
-    const password = document.getElementById("password").value;
-
-    auth.signInWithEmailAndPassword(email, password)
-        .then(() => {
-            window.location.href = "dashboard.html";
-        })
-        .catch(error => alert(error.message));
-}
-
-function logout() {
-    auth.signOut().then(() => {
-        window.location.href = "login.html";
-    });
+        .catch(error => {
+            console.error("createUser error:", error);
+            alert(error.message);
+        });
 }
 
 /****************************************************
