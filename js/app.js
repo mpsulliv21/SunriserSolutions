@@ -1,12 +1,140 @@
-// --- ADMIN DASHBOARD ---
+/****************************************************
+ * 1. FIREBASE CONFIGURATION
+ ****************************************************/
 
-function initAdmin() {
-    // Optional: require login
+const firebaseConfig = {
+    apiKey: "YOUR_API_KEY",
+    authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+    projectId: "YOUR_PROJECT_ID",
+    storageBucket: "YOUR_PROJECT_ID.appspot.com",
+    messagingSenderId: "YOUR_SENDER_ID",
+    appId: "YOUR_APP_ID"
+};
+
+firebase.initializeApp(firebaseConfig);
+
+const auth = firebase.auth();
+const db = firebase.firestore();
+const storage = firebase.storage();
+
+/****************************************************
+ * 2. AUTHENTICATION (SIGNUP + LOGIN + LOGOUT)
+ ****************************************************/
+
+function signup() {
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+
+    auth.createUserWithEmailAndPassword(email, password)
+        .then(() => {
+            alert("Account created!");
+            window.location.href = "login.html";
+        })
+        .catch(error => alert(error.message));
+}
+
+function login() {
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+
+    auth.signInWithEmailAndPassword(email, password)
+        .then(() => {
+            window.location.href = "dashboard.html";
+        })
+        .catch(error => alert(error.message));
+}
+
+function logout() {
+    auth.signOut().then(() => {
+        window.location.href = "login.html";
+    });
+}
+
+/****************************************************
+ * 3. PROFILE SAVING (FIRESTORE)
+ ****************************************************/
+
+function saveProfile() {
+    const user = auth.currentUser;
+
+    if (!user) {
+        alert("You must be logged in.");
+        return;
+    }
+
+    const profileData = {
+        email: user.email,
+        age: document.getElementById("age").value,
+        city: document.getElementById("city").value,
+        employment: document.getElementById("employment").value,
+        income: document.getElementById("income").value,
+        housing: document.getElementById("housing").value,
+        transportation: document.getElementById("transportation").value,
+        food: document.getElementById("food").value,
+        entertainment: document.getElementById("entertainment").value,
+        misc: document.getElementById("misc").value,
+        goal: document.getElementById("goal").value
+    };
+
+    db.collection("profiles").doc(user.uid).set(profileData)
+        .then(() => alert("Profile saved!"))
+        .catch(error => alert(error.message));
+}
+
+/****************************************************
+ * 4. DASHBOARD LOADING (FIRESTORE)
+ ****************************************************/
+
+function loadDashboard() {
     auth.onAuthStateChanged(user => {
         if (!user) {
-            // If you want to restrict admin:
-            // window.location.href = "login.html";
+            window.location.href = "login.html";
+            return;
         }
+
+        db.collection("profiles").doc(user.uid).get()
+            .then(doc => {
+                if (doc.exists) {
+                    const data = doc.data();
+                    document.getElementById("dashboard-name").innerText = user.email;
+                    document.getElementById("dashboard-goal").innerText = data.goal || "No goal set";
+                }
+            });
+    });
+}
+
+/****************************************************
+ * 5. RECEIPT UPLOADS (STORAGE)
+ ****************************************************/
+
+function submitCheckin() {
+    const user = auth.currentUser;
+
+    if (!user) {
+        alert("You must be logged in.");
+        return;
+    }
+
+    const file = document.getElementById("receipt").files[0];
+
+    if (!file) {
+        alert("Please upload a receipt.");
+        return;
+    }
+
+    const storageRef = storage.ref("receipts/" + user.uid + "/" + file.name);
+
+    storageRef.put(file)
+        .then(() => alert("Receipt uploaded!"))
+        .catch(error => alert(error.message));
+}
+
+/****************************************************
+ * 6. ADMIN DASHBOARD (VIEW USERS + RECEIPTS)
+ ****************************************************/
+
+function initAdmin() {
+    auth.onAuthStateChanged(user => {
         loadAdminUsers();
     });
 }
@@ -41,8 +169,6 @@ function loadAdminUsers() {
 
             usersBody.appendChild(tr);
         });
-    }).catch(err => {
-        console.error("Error loading users:", err);
     });
 }
 
@@ -83,15 +209,5 @@ function loadUserReceipts(userId) {
                 list.appendChild(li);
             });
         });
-    }).catch(err => {
-        console.error("Error loading receipts:", err);
     });
 }
-
-const user = auth.currentUser;
-
-const profileData = {
-    email: user.email,
-    // ...rest of your fields
-};
-
