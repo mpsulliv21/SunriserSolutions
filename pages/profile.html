@@ -65,3 +65,11 @@ function saveProfile() {
         .then(() => alert("Profile saved!"))
         .catch(error => alert(error.message));
 }
+<!-- Firebase v8 CDN scripts (load these first) -->
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-storage.js"></script>
+
+<!-- Your shared app logic that initializes Firebase and exposes functions -->
+<script src="/js/app.js"></script>
