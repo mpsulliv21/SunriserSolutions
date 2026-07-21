@@ -385,5 +385,11 @@ async function signup() {
   }
 }
 
-// Expose for onclick usage in HTML
-window.signup = signup;
+// Expose a helper signup function used by signup.html
+window.signup = async function(email, password) {
+  // Optional: add client-side validation here
+  const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+  // Optionally send verification email:
+  // await userCredential.user.sendEmailVerification();
+  return userCredential;
+};
