@@ -1,47 +1,82 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Login</title>
-    <link rel="stylesheet" href="../css/style.css">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Login — Sunriser Solutions</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <style>
+    /* Minimal inline styles so it looks OK without your CSS */
+    body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial; background:#f6f7fb; display:flex; align-items:center; justify-content:center; height:100vh; margin:0; }
+    .form-container { background:#fff; padding:28px; border-radius:8px; box-shadow:0 6px 20px rgba(20,30,60,0.08); width:340px; }
+    input { width:100%; padding:10px; margin-top:10px; border:1px solid #e3e6ee; border-radius:6px; }
+    button { margin-top:14px; width:100%; padding:10px; background:#2563eb; color:#fff; border:none; border-radius:6px; cursor:pointer; }
+  </style>
 </head>
-
 <body>
-    <div class="form-container">
-        <h2>Login</h2>
+  <div class="form-container">
+    <h2>Login</h2>
 
-        <input id="email" type="email" placeholder="Email">
-        <input id="password" type="password" placeholder="Password">
+    <form id="login-form" autocomplete="on">
+      <input id="email" type="email" placeholder="Email" required />
+      <input id="password" type="password" placeholder="Password" required minlength="6" />
+      <div id="login-error" style="color:#b91c1c; margin-top:8px; display:none;"></div>
+      <button id="login-btn" type="submit">Login</button>
+    </form>
 
-        <button>Login</button>
+    <p style="margin-top:12px">Don't have an account? <a href="signup.html">Sign Up</a></p>
+  </div>
 
-        <p>Don't have an account? <a href="signup.html">Sign Up</a></p>
-    </div>
+  <!-- Firebase v8 CDN scripts (load these first, only once) -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-storage.js"></script>
+
+  <!-- Your shared app logic that initializes Firebase and exposes `auth` and helpers -->
+  <script src="../js/app.js"></script>
+
+  <!-- Page glue: login handler that uses the v8 SDK or window.login helper -->
+  <script>
+    (function () {
+      const form = document.getElementById('login-form');
+      const errorEl = document.getElementById('login-error');
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        errorEl.style.display = 'none';
+        const email = document.getElementById('email').value.trim();
+        const password = document.getElementById('password').value;
+
+        if (!email || !password) {
+          errorEl.textContent = 'Please enter email and password.';
+          errorEl.style.display = 'block';
+          return;
+        }
+
+        try {
+          // Prefer a helper exposed by app.js if present
+          if (typeof window.login === 'function') {
+            await window.login(email, password);
+            window.location.href = 'dashboard.html';
+            return;
+          }
+
+          // Fallback to v8 SDK directly
+          if (window.firebase && firebase.auth) {
+            await firebase.auth().signInWithEmailAndPassword(email, password);
+            window.location.href = 'dashboard.html';
+            return;
+          }
+
+          throw new Error('Firebase not initialized. Check ../js/app.js and that CDN scripts loaded.');
+        } catch (err) {
+          errorEl.textContent = err.message || 'Login failed. Check console for details.';
+          errorEl.style.display = 'block';
+          console.error('Login error:', err);
+        }
+      });
+    })();
+  </script>
 </body>
 </html>
-
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-storage.js"></script>
-
-<script src="../js/app.js"></script>
-
-function login() {
-    const email = document.getElementById("email").value;
-    const password = document.getElementById("password").value;
-
-    auth.signInWithEmailAndPassword(email, password)
-        .then(() => {
-            window.location.href = "dashboard.html";
-        })
-        .catch(error => alert(error.message));
-}
-<!-- Firebase v8 CDN scripts (load these first) -->
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-storage.js"></script>
-
-<!-- Your shared app logic that initializes Firebase and exposes functions -->
-<script src="/js/app.js"></script>
