@@ -15,7 +15,7 @@ firebase.initializeApp(firebaseConfig);
 
 console.log("app.js loaded");
 console.log("firebase apps count:", firebase.apps ? firebase.apps.length : "no firebase");
-console.log("auth object exists:", typeof firebase.auth === "function");
+console.log("auth exists:", !!(firebase && firebase.auth));
 
 const auth = firebase.auth();
 const db = firebase.firestore();
@@ -26,32 +26,32 @@ const storage = firebase.storage();
  ****************************************************/
 
 function signup() {
-    console.log("signup() called");
-    const email = document.getElementById("email")?.value;
-    const password = document.getElementById("password")?.value;
-    console.log("email:", email, "password length:", password ? password.length : 0);
+  console.log("signup() called");
+  const email = document.getElementById("email")?.value;
+  const password = document.getElementById("password")?.value;
+  console.log("email:", email, "password length:", password ? password.length : 0);
 
-    if (!email || !password) {
-        alert("Please enter email and password");
-        return;
-    }
+  if (!email || !password) {
+    alert("Please enter email and password");
+    return;
+  }
 
-    if (!auth) {
-        console.error("auth is undefined");
-        alert("Authentication not initialized");
-        return;
-    }
+  if (!firebase || !firebase.auth) {
+    console.error("Firebase auth not initialized");
+    alert("Authentication not initialized");
+    return;
+  }
 
-    auth.createUserWithEmailAndPassword(email, password)
-        .then(() => {
-            console.log("createUser success");
-            alert("Account created!");
-            window.location.href = "login.html";
-        })
-        .catch(error => {
-            console.error("createUser error:", error);
-            alert(error.message);
-        });
+  firebase.auth().createUserWithEmailAndPassword(email, password)
+    .then(() => {
+      console.log("createUser success");
+      alert("Account created!");
+      window.location.href = "login.html";
+    })
+    .catch(error => {
+      console.error("createUser error:", error);
+      alert(error.message);
+    });
 }
 
 /****************************************************
