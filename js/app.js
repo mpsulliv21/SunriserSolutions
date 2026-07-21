@@ -351,3 +351,39 @@ onAuthStateChanged(auth, (user) => {
     console.log("Auth state: signed out");
   }
 });
+// js/app.js
+// Paste the firebaseConfig object exactly from Firebase Console
+const firebaseConfig = {
+  apiKey: "YOUR_API_KEY",
+  authDomain: "your-project-id.firebaseapp.com",
+  projectId: "your-project-id",
+  storageBucket: "your-project-id.appspot.com",
+  messagingSenderId: "1234567890",
+  appId: "1:1234567890:web:abcdef123456"
+};
+
+// Initialize Firebase (v8 style)
+firebase.initializeApp(firebaseConfig);
+
+// Shortcuts to services
+const auth = firebase.auth();
+const db = firebase.firestore();
+const storage = firebase.storage();
+
+// Example signup function (called from your signup form)
+async function signup() {
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
+  try {
+    const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+    console.log("User created:", userCredential.user.uid);
+    alert("Account created");
+    // redirect or update UI
+  } catch (err) {
+    console.error(err);
+    alert(err.message);
+  }
+}
+
+// Expose for onclick usage in HTML
+window.signup = signup;
